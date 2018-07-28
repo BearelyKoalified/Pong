@@ -1,0 +1,110 @@
+<canvas id="gc" width="640" height="480"></canvas>
+
+<script>
+    // set default paddle 1 y-position, paddle 2 y-position
+    p1y = p2y = 40;
+
+    //paddle thickness
+    pt = 10;
+    //paddle height
+    ph = 100;
+    //balls position set to middle
+    bx = by = 50;
+    //ball dimension - not used for collisions, only appearance
+    bd = 5;
+    //x and y velocity
+    xv = yv = 4;
+
+    //ai speed
+    ais = 2;
+
+    score1 = score2 = 0;
+
+    window.onload = function () {
+        c = document.getElementById("gc");
+        //canvas context to get graphics buffer
+        cc = c.getContext('2d');
+        //update call at 30fps
+        setInterval(update, 1000 / 30);
+
+        //player movement code
+        c.addEventListener('mousemove', function (e) {
+            p1y = e.clientY - ph / 2;
+
+        });
+    }
+    function reset() {
+        bx = c.width / 2;
+        by = c.height / 2;
+        xv = -xv;
+    }
+    function update() {
+        //physics for ball bouncing etc.
+        bx += xv;
+        by += yv;
+
+        //if ball above top screen or below bottom
+        if (by < 0 && yv < 0 || (by > c.height && yv > 0)) {
+            // then reverse direction
+            yv = -yv;
+        }
+
+        //one side screen logic
+        if (bx < 0+pt) {
+            //if ball reaches left side screen & bar within current bar position
+            if (by > p1y && by < p1y + ph) {
+                xv = -xv;
+                dy = by - (p1y + ph / 2);
+                yv = dy * 0.3;
+                //otherwise award point and reset
+            } else {
+                score2++;
+                reset();
+            }
+        }
+
+        //other side logic
+        if (bx > c.width-pt) {
+            //if ball reaches right side screen & bar within current bar position
+            // then flip ball around
+            if (by > p2y && by < p2y + ph) {
+                xv = -xv;
+                dy = by - (p2y + ph / 2);
+                yv = dy * 0.3;
+                //otherwise award point and reset
+            } else {
+                score1++;
+                reset();
+            }
+        }
+
+        // simplest ai
+        if (p2y + ph / 2 < by) {
+            p2y += ais;
+        } else {
+            p2y -= ais;
+        }
+
+
+
+
+        //canvas fill to dimensions of screen starting at 0,0
+        cc.fillStyle = 'black';
+        cc.fillRect(0, 0, c.width, c.height);
+
+       
+        cc.fillStyle = 'white';
+         //drawing paddles current position
+        cc.fillRect(0, p1y, pt, ph);
+        cc.fillRect(c.width - pt, p2y, pt, ph);
+        
+        //draw ball current position
+        cc.fillRect(bx-bd/2,by-bd/2,bd,bd);
+        
+        //draw scores 100px from left & right, and 100px down
+        cc.fillText(score1, 100, 100);
+        cc.fillText(score2, c.width - 100, 100);
+
+
+    }
+</script>
